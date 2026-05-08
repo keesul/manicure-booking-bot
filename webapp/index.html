@@ -9,9 +9,69 @@
 </head>
 <body>
   <div class="container">
-    <!-- Крок 1: Вибір майстра -->
-    <div id="step1" class="step active">
+    <!-- Головне меню -->
+    <div id="mainMenu" class="step active">
       <div class="header">
+        <h1>💅 Sharashkina kontora</h1>
+        <p class="subtitle">Оберіть дію</p>
+      </div>
+
+      <div class="menu-buttons">
+        <button class="menu-btn" onclick="showBooking()">
+          <span class="menu-icon">📅</span>
+          <span class="menu-text">Записатися</span>
+        </button>
+        <button class="menu-btn" onclick="showMyBookings()">
+          <span class="menu-icon">📋</span>
+          <span class="menu-text">Мої записи</span>
+        </button>
+        <button class="menu-btn" onclick="showAbout()">
+          <span class="menu-icon">ℹ️</span>
+          <span class="menu-text">Про салон</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Мої записи -->
+    <div id="myBookingsPage" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="showMainMenu()">← Назад</button>
+        <h1>📋 Мої записи</h1>
+      </div>
+      <div id="bookingsList" class="bookings-list">
+        <!-- Динамічно заповнюється -->
+      </div>
+    </div>
+
+    <!-- Про салон -->
+    <div id="aboutPage" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="showMainMenu()">← Назад</button>
+        <h1>ℹ️ Про салон</h1>
+      </div>
+      <div class="about-content">
+        <h3>👩‍🎨 Наші майстри:</h3>
+        <ul>
+          <li>Олена Коваленко - класичний манікюр, педикюр</li>
+          <li>Марія Шевченко - нарощування, дизайн</li>
+          <li>Анна Бондаренко - апаратний манікюр, SPA</li>
+        </ul>
+
+        <h3>⏰ Графік роботи:</h3>
+        <p>Пн-Нд: 09:00 - 20:00</p>
+
+        <h3>📍 Адреса:</h3>
+        <p>вул. Пушкіна</p>
+
+        <h3>📞 Телефон:</h3>
+        <p>+380501234567</p>
+      </div>
+    </div>
+
+    <!-- Крок 1: Вибір майстра -->
+    <div id="step1" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="showMainMenu()">← Назад</button>
         <h1>👩‍🎨 Оберіть майстра</h1>
         <p class="subtitle">Всі наші майстри - професіонали з досвідом</p>
       </div>

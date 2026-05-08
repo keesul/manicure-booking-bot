@@ -6,6 +6,7 @@ let selectedMaster = null;
 let selectedService = null;
 let selectedDate = null;
 let selectedTime = null;
+let userBookings = []; // Зберігаємо записи користувача
 
 // Дані майстрів (хардкод, бо немає бекенду)
 const masters = [
@@ -28,6 +29,75 @@ const services = [
 
 // Зайняті слоти (приклад - в реальності має приходити з бекенду)
 const bookedSlots = {};
+
+// Навігація головного меню
+function showMainMenu() {
+  hideAllSteps();
+  document.getElementById('mainMenu').classList.add('active');
+}
+
+function showBooking() {
+  hideAllSteps();
+  document.getElementById('step1').classList.add('active');
+  renderMasters();
+}
+
+function showMyBookings() {
+  hideAllSteps();
+  document.getElementById('myBookingsPage').classList.add('active');
+
+  // Запит записів з бота через initDataUnsafe
+  const userId = tg.initDataUnsafe?.user?.id;
+
+  if (!userId) {
+    document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">Помилка: не вдалося отримати дані користувача</p>';
+    return;
+  }
+
+  // Відправляємо запит на отримання записів
+  tg.sendData(JSON.stringify({ action: 'get_bookings', userId: userId }));
+
+  // Поки що показуємо заглушку
+  document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">Завантаження...</p>';
+
+  // Симуляція відповіді (в реальності дані прийдуть з бота)
+  setTimeout(() => {
+    if (userBookings.length === 0) {
+      document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">У вас поки немає записів</p>';
+    } else {
+      renderBookings();
+    }
+  }, 500);
+}
+
+function showAbout() {
+  hideAllSteps();
+  document.getElementById('aboutPage').classList.add('active');
+}
+
+function hideAllSteps() {
+  document.querySelectorAll('.step').forEach(step => {
+    step.classList.remove('active');
+  });
+}
+
+function renderBookings() {
+  const container = document.getElementById('bookingsList');
+
+  container.innerHTML = userBookings.map(booking => `
+    <div class="booking-card">
+      <div class="booking-header">
+        <span class="booking-date">📅 ${booking.date}</span>
+        <span class="booking-time">⏰ ${booking.time}</span>
+      </div>
+      <div class="booking-details">
+        <p><strong>👩‍🎨 Майстер:</strong> ${booking.masterName}</p>
+        <p><strong>💅 Послуга:</strong> ${booking.serviceName}</p>
+        <p><strong>💰 Вартість:</strong> ${booking.price} грн</p>
+      </div>
+    </div>
+  `).join('');
+}
 
 // Ініціалізація
 document.addEventListener('DOMContentLoaded', () => {
@@ -91,10 +161,10 @@ function renderCalendar() {
     days.push(date);
   }
 
-  container.innerHTML = days.map(date => {
+  container.innerHTML = days.map((date, index) => {
     const dateStr = formatDate(date);
     const dayName = getDayName(date);
-    const isToday = i === 0;
+    const isToday = index === 0;
 
     return `
       <div class="calendar-day ${isToday ? 'today' : ''}" onclick="selectDate('${dateStr}')">
