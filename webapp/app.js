@@ -245,7 +245,7 @@ function showSummary() {
   document.getElementById('summaryPrice').textContent = `${selectedService.price} грн`;
 }
 
-function confirmBooking() {
+async function confirmBooking() {
   const phone = document.getElementById('phone').value;
   const notes = document.getElementById('notes').value;
 
@@ -254,8 +254,17 @@ function confirmBooking() {
     return;
   }
 
+  const userId = tg.initDataUnsafe?.user?.id;
+  const userName = tg.initDataUnsafe?.user?.first_name + (tg.initDataUnsafe?.user?.last_name ? ' ' + tg.initDataUnsafe?.user?.last_name : '');
+
+  if (!userId) {
+    alert('Помилка: не вдалося отримати дані користувача');
+    return;
+  }
+
   const bookingData = {
-    action: 'create_booking',
+    userId: userId,
+    userName: userName,
     masterId: selectedMaster.id,
     serviceId: selectedService.id,
     date: selectedDate,
@@ -264,8 +273,30 @@ function confirmBooking() {
     notes: notes
   };
 
-  tg.sendData(JSON.stringify(bookingData));
-  tg.close();
+  console.log('Відправляю дані через HTTP:', bookingData);
+
+  try {
+    // Відправляємо через HTTP на Railway
+    const response = await fetch('https://manicure-booking-bot-production.up.railway.app/api/booking', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData)
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('✅ Запис успішно створено! Перевірте бота для деталей.');
+      tg.close();
+    } else {
+      alert('❌ Помилка: ' + result.error);
+    }
+  } catch (err) {
+    console.error('Помилка HTTP запиту:', err);
+    alert('❌ Помилка з\'єднання: ' + err.message);
+  }
 }
 
 // Навігація між кроками
