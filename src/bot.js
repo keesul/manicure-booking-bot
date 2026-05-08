@@ -289,6 +289,33 @@ app.post('/api/booking', async (req, res) => {
   }
 });
 
+// HTTP endpoint для отримання записів користувача
+app.get('/api/bookings/:userId', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+
+    log('📱 HTTP запит на отримання записів', { userId });
+
+    const bookings = dbQueries.getUserBookings.all(userId);
+
+    res.json({
+      success: true,
+      bookings: bookings.map(b => ({
+        id: b.id,
+        date: b.booking_date,
+        time: b.booking_time,
+        masterName: b.master_name,
+        serviceName: b.service_name,
+        price: b.price,
+        status: b.status
+      }))
+    });
+  } catch (err) {
+    log('❌ Помилка HTTP отримання записів', { error: err.message });
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Запуск Express сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

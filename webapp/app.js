@@ -46,7 +46,6 @@ function showMyBookings() {
   hideAllSteps();
   document.getElementById('myBookingsPage').classList.add('active');
 
-  // Запит записів з бота через initDataUnsafe
   const userId = tg.initDataUnsafe?.user?.id;
 
   if (!userId) {
@@ -54,20 +53,24 @@ function showMyBookings() {
     return;
   }
 
-  // Відправляємо запит на отримання записів
-  tg.sendData(JSON.stringify({ action: 'get_bookings', userId: userId }));
-
-  // Поки що показуємо заглушку
+  // Показуємо завантаження
   document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">Завантаження...</p>';
 
-  // Симуляція відповіді (в реальності дані прийдуть з бота)
-  setTimeout(() => {
-    if (userBookings.length === 0) {
-      document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">У вас поки немає записів</p>';
-    } else {
-      renderBookings();
-    }
-  }, 500);
+  // Завантажуємо записи з Railway
+  fetch(`https://web-production-70677.up.railway.app/api/bookings/${userId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.bookings.length > 0) {
+        userBookings = data.bookings;
+        renderBookings();
+      } else {
+        document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">У вас поки немає записів</p>';
+      }
+    })
+    .catch(err => {
+      console.error('Помилка завантаження записів:', err);
+      document.getElementById('bookingsList').innerHTML = '<p class="no-bookings">Помилка завантаження записів</p>';
+    });
 }
 
 function showAbout() {
@@ -84,10 +87,13 @@ function hideAllSteps() {
 function renderBookings() {
   const container = document.getElementById('bookingsList');
 
-  container.innerHTML = userBookings.map(booking => `
+  container.innerHTML = userBookings.map(booking => {
+    const formattedDate = formatDateReadable(booking.date);
+
+    return `
     <div class="booking-card">
       <div class="booking-header">
-        <span class="booking-date">📅 ${booking.date}</span>
+        <span class="booking-date">📅 ${formattedDate}</span>
         <span class="booking-time">⏰ ${booking.time}</span>
       </div>
       <div class="booking-details">
@@ -96,7 +102,7 @@ function renderBookings() {
         <p><strong>💰 Вартість:</strong> ${booking.price} грн</p>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // Ініціалізація
@@ -277,7 +283,7 @@ async function confirmBooking() {
 
   try {
     // Відправляємо через HTTP на Railway
-    const response = await fetch('https://manicure-booking-bot-production.up.railway.app/api/booking', {
+    const response = await fetch('https://web-production-70677.up.railway.app/api/booking', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -285,13 +291,18 @@ async function confirmBooking() {
       body: JSON.stringify(bookingData)
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
 
     if (result.success) {
+      // Показуємо успішне повідомлення
+      showMainMenu();
       alert('✅ Запис успішно створено! Перевірте бота для деталей.');
-      tg.close();
     } else {
-      alert('❌ Помилка: ' + result.error);
+      alert('❌ Помилка: ' + (result.error || 'Невідома помилка'));
     }
   } catch (err) {
     console.error('Помилка HTTP запиту:', err);
