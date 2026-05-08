@@ -5,10 +5,17 @@ import path from 'path';
 import { dbQueries } from './database.js';
 import { format, addDays, parse, isAfter, isBefore } from 'date-fns';
 import { uk } from 'date-fns/locale';
+import express from 'express';
+import cors from 'cors';
 
 dotenv.config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Logging setup
 const logsDir = './logs';
@@ -53,11 +60,8 @@ bot.start((ctx) => {
     null
   );
 
-  const welcomeMessage = `
-Здарова чіпуха😎
-
-Пора на нігтики💅
-  `;
+  const welcomeMessage = `Здарова чіпуха😎
+Пора на нігтики💅`;
 
   ctx.reply(welcomeMessage);
 });
@@ -228,6 +232,68 @@ bot.command('mybookings', async (ctx) => {
   });
 
   ctx.reply(message);
+});
+
+// HTTP endpoint для створення записів з Mini App
+app.post('/api/booking', async (req, res) => {
+  try {
+    const { userId, masterId, serviceId, date, time, phone, notes, userName } = req.body;
+
+    log('📱 HTTP запит на створення запису', { userId, masterId, serviceId, date, time });
+
+    // Створюємо бронювання
+    const result = dbQueries.createBooking.run(
+      userId,
+      userName,
+      phone,
+      masterId,
+      serviceId,
+      date,
+      time,
+      notes || null
+    );
+
+    // Оновлюємо лічильник записів користувача
+    dbQueries.incrementUserBookings.run(userId);
+
+    // Отримуємо деталі запису
+    const master = dbQueries.getMasterById.get(masterId);
+    const service = dbQueries.getServiceById.get(serviceId);
+
+    const formattedDate = format(parse(date, 'yyyy-MM-dd', new Date()), 'd MMMM yyyy', { locale: uk });
+
+    // Відправляємо підтвердження в Telegram
+    await bot.telegram.sendMessage(userId, `
+✅ Запис успішно створено!
+
+📅 Дата: ${formattedDate}
+⏰ Час: ${time}
+👩‍🎨 Майстер: ${master.name}
+💅 Послуга: ${service.name}
+💰 Вартість: ${service.price} грн
+⏱ Тривалість: ${service.duration} хв
+
+📍 ${process.env.SALON_ADDRESS}
+
+Ми надішлемо вам нагадування за день до візиту!
+
+Дякуємо, що обрали ${process.env.SALON_NAME}! 💖
+    `);
+
+    log('✅ Створено бронювання через HTTP', { bookingId: result.lastInsertRowid, userId });
+
+    res.json({ success: true, bookingId: result.lastInsertRowid });
+  } catch (err) {
+    log('❌ Помилка HTTP створення запису', { error: err.message });
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Запуск Express сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🌐 HTTP сервер запущено на порту ${PORT}`);
+  log('🌐 HTTP сервер запущено', { port: PORT });
 });
 
 // Error handler
