@@ -7,6 +7,7 @@ import { format, addDays, parse, isAfter, isBefore } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import express from 'express';
 import cors from 'cors';
+import cron from 'node-cron';
 
 dotenv.config();
 
@@ -315,6 +316,48 @@ app.get('/api/bookings/:userId', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// Автоматичні нагадування - щодня о 10:00
+cron.schedule('0 10 * * *', async () => {
+  try {
+    const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const bookings = dbQueries.getBookingsByDate.all(tomorrow);
+
+    log('🔔 Відправка нагадувань', { date: tomorrow, count: bookings.length });
+
+    for (const booking of bookings) {
+      try {
+        const formattedDate = format(parse(booking.booking_date, 'yyyy-MM-dd', new Date()), 'd MMMM yyyy', { locale: uk });
+
+        await bot.telegram.sendMessage(booking.user_id, `
+🔔 Нагадування!
+
+Завтра у вас запис:
+📅 Дата: ${formattedDate}
+⏰ Час: ${booking.booking_time}
+👩‍🎨 Майстер: ${booking.master_name}
+💅 Послуга: ${booking.service_name}
+⏱ Тривалість: ${booking.duration} хв
+
+📍 ${process.env.SALON_ADDRESS}
+
+Чекаємо на вас! 💖
+        `);
+
+        log('✅ Нагадування надіслано', { userId: booking.user_id, bookingId: booking.id });
+      } catch (err) {
+        log('❌ Помилка надсилання нагадування', { userId: booking.user_id, error: err.message });
+      }
+    }
+  } catch (err) {
+    log('❌ Помилка cron нагадувань', { error: err.message });
+  }
+}, {
+  timezone: "Europe/Kiev"
+});
+
+log('🔔 Cron нагадувань налаштовано (щодня о 10:00)');
+console.log('🔔 Автоматичні нагадування активовані');
 
 // Запуск Express сервера
 const PORT = process.env.PORT || 3000;
