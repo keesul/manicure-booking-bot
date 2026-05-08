@@ -5,7 +5,7 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const db = new Database(join(__dirname, '../data/bookings.db'));
+const db = new Database(process.env.DATABASE_PATH || join(__dirname, '../data/bookings.db'));
 
 // Створення таблиць
 db.exec(`
