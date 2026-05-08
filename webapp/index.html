@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Запис на манікюр</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Крок 1: Вибір майстра -->
+    <div id="step1" class="step active">
+      <div class="header">
+        <h1>👩‍🎨 Оберіть майстра</h1>
+        <p class="subtitle">Всі наші майстри - професіонали з досвідом</p>
+      </div>
+
+      <div id="mastersList" class="masters-list">
+        <!-- Динамічно заповнюється -->
+      </div>
+    </div>
+
+    <!-- Крок 2: Вибір послуги -->
+    <div id="step2" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="goToStep(1)">← Назад</button>
+        <h1>💅 Оберіть послугу</h1>
+      </div>
+
+      <div id="servicesList" class="services-list">
+        <!-- Динамічно заповнюється -->
+      </div>
+    </div>
+
+    <!-- Крок 3: Вибір дати -->
+    <div id="step3" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="goToStep(2)">← Назад</button>
+        <h1>📅 Оберіть дату</h1>
+      </div>
+
+      <div id="calendar" class="calendar">
+        <!-- Динамічно заповнюється -->
+      </div>
+    </div>
+
+    <!-- Крок 4: Вибір часу -->
+    <div id="step4" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="goToStep(3)">← Назад</button>
+        <h1>⏰ Оберіть час</h1>
+        <p class="subtitle" id="selectedDateText"></p>
+      </div>
+
+      <div id="timeSlots" class="time-slots">
+        <!-- Динамічно заповнюється -->
+      </div>
+    </div>
+
+    <!-- Крок 5: Підтвердження -->
+    <div id="step5" class="step">
+      <div class="header">
+        <button class="back-btn" onclick="goToStep(4)">← Назад</button>
+        <h1>✅ Підтвердження запису</h1>
+      </div>
+
+      <div class="summary">
+        <div class="summary-item">
+          <span class="label">👩‍🎨 Майстер:</span>
+          <span class="value" id="summaryMaster"></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">💅 Послуга:</span>
+          <span class="value" id="summaryService"></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">📅 Дата:</span>
+          <span class="value" id="summaryDate"></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">⏰ Час:</span>
+          <span class="value" id="summaryTime"></span>
+        </div>
+        <div class="summary-item">
+          <span class="label">⏱ Тривалість:</span>
+          <span class="value" id="summaryDuration"></span>
+        </div>
+        <div class="summary-item price">
+          <span class="label">💰 Вартість:</span>
+          <span class="value" id="summaryPrice"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">📞 Ваш телефон:</label>
+        <input type="tel" id="phone" placeholder="+380501234567" required>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">📝 Коментар (необов'язково):</label>
+        <textarea id="notes" placeholder="Ваші побажання або коментарі" rows="3"></textarea>
+      </div>
+
+      <button class="btn btn-primary" onclick="confirmBooking()">
+        ✅ Підтвердити запис
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
