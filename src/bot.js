@@ -57,26 +57,9 @@ bot.start((ctx) => {
 Здарова чіпуха😎
 
 Пора на нігтики💅
-
-🎨 Наші послуги:
-• Класичний та апаратний манікюр
-• Нарощування нігтів
-• Педикюр
-• SPA-процедури
-• Дизайн нігтів
-
-👩‍🎨 3 професійних майстри
-⏰ Працюємо з ${process.env.WORK_START} до ${process.env.WORK_END}
-📍 ${process.env.SALON_ADDRESS}
-
-Натисніть кнопку нижче, щоб записатися!
   `;
 
-  ctx.reply(welcomeMessage, Markup.inlineKeyboard([
-    [Markup.button.webApp('📅 Записатися онлайн', process.env.WEBAPP_URL)],
-    [Markup.button.callback('📋 Мої записи', 'my_bookings')],
-    [Markup.button.callback('ℹ️ Про салон', 'about')],
-  ]));
+  ctx.reply(welcomeMessage);
 });
 
 // Мої записи
